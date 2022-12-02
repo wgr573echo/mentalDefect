@@ -17,20 +17,14 @@
 
 <table>
    <tr>
-      <td>方法</td>
-      <td>骨干网络</td>
-      <td>预训练参数</td>
-      <td>GC10-DET</td>
-      <td></td>
-      <td>NEU-CL</td>
-      <td></td>
-      <td>天池铝材表面瑕疵</td>
-      <td></td>
+      <td rowspan="2">方法</td>
+      <td rowspan="2">骨干网络</td>
+      <td rowspan="2">预训练参数</td>
+      <td colspan="2">GC10-DET</td>
+      <td colspan="2">NEU-CL</td>
+      <td colspan="2">天池铝材表面瑕疵</td>
    </tr>
    <tr>
-      <td></td>
-      <td></td>
-      <td></td>
       <td>5way1shot</td>
       <td>5way5shot</td>
       <td>5way1shot</td>
