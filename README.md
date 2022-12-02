@@ -1,7 +1,7 @@
 # 小样本金属损伤分类
 - 参考 https://github.com/orobix/Prototypical-Networks-for-Few-shot-Learning-PyTorch#prototypical-networks-for-few-shot-learning-in-pytorch
 - baseline：ProtoNet
-- 数据：①GC10-NET ②NEU-CL ③天池铝材比赛数据集
+- 数据：①GC10-DET ②NEU-CL ③天池铝材比赛数据集
 - 数据性质
 ###  GC10-NET
 
@@ -15,6 +15,42 @@
 |  ----  |  ----  |
 |  accuracy  |  72.445%  |
 
-<table><tr><th>Tables</th><th>Are</th><th>Cool</th></tr><tr><td>col 1 is</td><td>left-aligned</td><td>$1600</td></tr><tr><td>col 2 is</td><td>centered</td><td>$12</td></tr><tr><td>col 3 is</td><td>right-aligned</td><td>$1</td></tr></table>
+<table>
+   <tr>
+      <td>方法</td>
+      <td>骨干网络</td>
+      <td>预训练参数</td>
+      <td>GC10-DET</td>
+      <td></td>
+      <td>NEU-CL</td>
+      <td></td>
+      <td>天池铝材表面瑕疵</td>
+      <td></td>
+   </tr>
+   <tr>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td>5way1shot</td>
+      <td>5way5shot</td>
+      <td>5way1shot</td>
+      <td>5way5shot</td>
+      <td>5way1shot</td>
+      <td>5way5shot</td>
+   </tr>
+   <tr>
+      <td>ProtoNet</td>
+      <td>conv64</td>
+      <td>/</td>
+      <td></td>
+      <td>72.45%</td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+   </tr>
+   <tr>
+      <td></td>
+   </tr>
+</table>
 
-hh
