@@ -1,0 +1,10 @@
+crease\rot000
+crease\rot090
+crease\rot180
+crease\rot270
+crescent_gap\rot000
+crescent_gap\rot090
+crescent_gap\rot180
+crescent_gap\rot270
+inclusion\rot000
+inclusion\rot090

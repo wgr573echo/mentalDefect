@@ -1,0 +1,10 @@
+crease\rot000
+crescent_gap\rot000
+inclusion\rot000
+oil_spot\rot000
+punching_hole\rot000
+rolled_pit\rot000
+silk_spot\rot000
+waist_folding\rot000
+water_spot\rot000
+welding_line\rot000
