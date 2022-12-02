@@ -11,10 +11,6 @@
 - 问题：一张图片上可能有多种损伤，作为单类样本训练可能有影响 
 - 训练结果：
 
-|  模型  |  ProtoNet（conv64）  | 
-|  ----  |  ----  |
-|  accuracy  |  72.445%  |
-
 <table>
    <tr>
       <td rowspan="2">方法</td>
@@ -41,9 +37,6 @@
       <td></td>
       <td></td>
       <td></td>
-      <td></td>
-   </tr>
-   <tr>
       <td></td>
    </tr>
 </table>
