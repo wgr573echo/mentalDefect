@@ -34,7 +34,7 @@ def euclidean_dist(x, y):
     return torch.pow(x - y, 2).sum(2) # 求欧氏距离，并在特征那个维度求和
 
 
-def prototypical_loss(input, target, n_support):
+def prototypical_loss(mode, input, target, n_support):
     '''
     Inspired by https://github.com/jakesnell/prototypical-networks/blob/master/protonets/models/few_shot.py
 
@@ -57,19 +57,22 @@ def prototypical_loss(input, target, n_support):
         # FIXME when torch will support where as np
         return target_cpu.eq(c).nonzero()[:n_support].squeeze(1)
 
-    # FIXME when torch.unique will be available on cuda too
-    classes = torch.unique(target_cpu)
+    
+    classes = torch.unique(target_cpu) #去除重复，一共这一批5类分别是哪五类
     n_classes = len(classes)
-    # FIXME when torch will support where as np
-    # assuming n_query, n_target constants
-    n_query = target_cpu.eq(classes[0].item()).sum().item() - n_support
+    n_query = target_cpu.eq(classes[0].item()).sum().item() - n_support #用一个class找出query的sample数
 
-    support_idxs = list(map(supp_idxs, classes))
+    support_idxs = list(map(supp_idxs, classes)) #当前50个feature对应的顺序下选出前五个作为support
 
     prototypes = torch.stack([input_cpu[idx_list].mean(0) for idx_list in support_idxs]) #prototypes：60*64（60个class的平均proto特征）
-    # FIXME when torch will support where as np
-    query_idxs = torch.stack(list(map(lambda c: target_cpu.eq(c).nonzero()[n_support:], classes))).view(-1)
+    # 存最后model的prototype
+    if mode == "test":
+        f = open('prototype.txt','w')
+        f.write(prototypes)
+        f.close()
 
+    # FIXME when torch will support where as np
+    query_idxs = torch.stack(list(map(lambda c: target_cpu.eq(c).nonzero()[n_support:], classes))).view(-1) #当前50个feature对应的顺序下选出后五个作为query
     query_samples = input.to('cpu')[query_idxs]
     dists = euclidean_dist(query_samples, prototypes) # (classnum * querysamplenum) X 这一批的类别数
     log_p_y = F.log_softmax(-dists, dim=1).view(n_classes, n_query, -1) #拆分samples为每个类别的5个samples

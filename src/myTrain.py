@@ -116,7 +116,7 @@ def train(opt, tr_dataloader, model, optim, lr_scheduler, val_dataloader=None):
             x, y = batch
             x, y = x.to(device), y.to(device)
             model_output = model(x) #600张图片*64维特征
-            loss, acc = loss_fn(model_output, target=y,
+            loss, acc = loss_fn('train',model_output, target=y,
                                 n_support=opt.num_support_tr)
             loss.backward()
             optim.step()
@@ -138,7 +138,7 @@ def train(opt, tr_dataloader, model, optim, lr_scheduler, val_dataloader=None):
             x, y = batch
             x, y = x.to(device), y.to(device)
             model_output = model(x)
-            loss, acc = loss_fn(model_output, target=y,
+            loss, acc = loss_fn('val',model_output, target=y,
                                 n_support=opt.num_support_val)
             val_loss.append(loss.item())
             val_acc.append(acc.item())
@@ -176,7 +176,7 @@ def test(opt, test_dataloader, model):
             x, y = batch
             x, y = x.to(device), y.to(device)
             model_output = model(x)
-            _, acc = loss_fn(model_output, target=y,
+            _, acc = loss_fn('test',model_output, target=y,
                              n_support=opt.num_support_val)
             avg_acc.append(acc.item())
     avg_acc = np.mean(avg_acc)

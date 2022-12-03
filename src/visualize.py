@@ -45,6 +45,71 @@ def euclidean_dist(x, y):
 
     return torch.pow(x - y, 2).sum(2) # 求欧氏距离，并在特征那个维度求和
 
+# 输入：全部的val样本encode出来的64维特征；全部样本对应的label
+# 输出：每个类别的后一半样本经过欧氏距离比较得到的predict的class；每个类别的后一半样本对应的label
+def classify(feature,label):
+    target_cpu = torch.squeeze(torch.tensor(label))
+    input_cpu = torch.squeeze(torch.tensor(feature))
+
+    
+    classes = torch.unique(target_cpu)
+    n_classes = len(classes)
+
+    # 把每一类的前一半sample作为计算proto的向量，后一半进行class预测
+    front_samples = []
+    front_labels = []
+    back_samples = []
+    back_labels = []
+    
+
+    # 将不同类别的feature和label分别存一个数组
+    def split(c):
+        sameSamples = []
+        sameSamplesID = target_cpu.eq(c).nonzero().squeeze(1)
+        for i in range(target_cpu.shape[0]):
+            if i in sameSamplesID:
+                sameSamples.append(input_cpu[i])
+        # 计算用的前一半
+        cutlength = int(len(sameSamples)/2)
+        computeSamples = sameSamples[:cutlength]
+        front_samples.append(computeSamples)
+        labels = np.ones(cutlength)*int(c)
+        front_labels.append(labels)
+        # val用的后一半
+        backlen = int(len(sameSamples) - cutlength)
+        computeSamples = sameSamples[-backlen:]
+        for i in computeSamples:
+            back_samples.append(i)
+        labels = np.ones(backlen)*int(c)
+        for i in labels:
+            back_labels.append(int(i))
+
+
+
+    for classid in classes:
+        split(classid)
+
+    # 计算每个class的中心feature向量
+    prototypes = []
+    for classft in front_samples:
+        classft = torch.stack(classft)
+        tmp = []
+        tmp = classft.mean(0)
+        prototypes.append(tmp)
+    
+    
+    back_samples = torch.stack(back_samples)
+    prototypes = torch.stack(prototypes)
+    dists = euclidean_dist(back_samples, prototypes) # (classnum * querysamplenum) X 这一批的类别数
+    class_predict = []
+    for i in dists:
+        predict = classes[np.argmin(i)]
+        class_predict.append(predict)
+
+    class_predict = torch.stack(class_predict).numpy()
+    back_labels = np.array(back_labels, dtype = int)
+    return class_predict,back_labels
+
 
 if __name__ == "__main__":
 
@@ -60,8 +125,6 @@ if __name__ == "__main__":
 
     forward_model = forward_model.eval()
 
-    from torchvision import datasets
-
     train_dataset = myDataset('val','../mydataset/gc10')
     train_sampler = None
     train_loader = torch.utils.data.DataLoader(
@@ -72,7 +135,6 @@ if __name__ == "__main__":
 
         detect_image(image,forward_model)
         img_ys.append(label.numpy())
-    
     
     
     
@@ -133,16 +195,21 @@ if __name__ == "__main__":
     #         wl_y.append(X_norm[i][1])
 
 
-    # # type0 = axes.scatter(cr_x, cr_y, s=4,label='crease')
-    # # type1 = axes.scatter(cg_x, cg_y, s=6,label='crescent_gap')
+    # type0 = axes.scatter(cr_x, cr_y, s=4,label='crease')
+    # type1 = axes.scatter(cg_x, cg_y, s=6,label='crescent_gap')
     # type2 = axes.scatter(in_x, in_y, s=8,label='inclusion')
-    # # type3 = axes.scatter(oi_x, oi_y, s=10,label='oil_spot')
+    # type3 = axes.scatter(oi_x, oi_y, s=10,label='oil_spot')
     # type4 = axes.scatter(ph_x, ph_y, s=12,label='punching_hole')
-    # # type5 = axes.scatter(rp_x, rp_y, s=14,label='rolled_pit')
-    # # type6 = axes.scatter(ss_x, ss_y, s=16,label='silk_spot')
-    # # type7 = axes.scatter(wf_x, wf_y, s=18,label='waist folding')
-    # # type8 = axes.scatter(ws_x, ws_y, s=20,label='water_spot')
-    # # type9 = axes.scatter(wl_x, wl_y, s=22,label='welding_line')
+    # type5 = axes.scatter(rp_x, rp_y, s=14,label='rolled_pit')
+    # type6 = axes.scatter(ss_x, ss_y, s=16,label='silk_spot')
+    # type7 = axes.scatter(wf_x, wf_y, s=18,label='waist folding')
+    # type8 = axes.scatter(ws_x, ws_y, s=20,label='water_spot')
+    # type9 = axes.scatter(wl_x, wl_y, s=22,label='welding_line')
+
+    # type0 = axes.scatter(cr_x, cr_y, s=4,label='rot0')
+    # type1 = axes.scatter(cg_x, cg_y, s=6,label='rot90')
+    # type2 = axes.scatter(in_x, in_y, s=8,label='rot180')
+    # type3 = axes.scatter(oi_x, oi_y, s=10,label='rot270')
 
     # plt.legend(loc=2)
     # plt.savefig('1.png', bbox_inches='tight')
@@ -158,22 +225,27 @@ if __name__ == "__main__":
 
 
     # 需要衡量欧式距离，再进行混淆矩阵
-    
+    y_pred , y_true = classify(img_fts,img_ys)
 
 
     # 对预测的结果绘制混淆矩阵
-    # from sklearn.metrics import confusion_matrix
-    # import matplotlib.pyplot as plt
-    # y_true = img_ys
-    # y_pred = img_fts
-    # C = confusion_matrix(y_true, y_pred)
-    # plt.matshow(C, cmap=plt.cm.Reds) # 根据最下面的图按自己需求更改颜色
-    # # plt.colorbar()
+    from sklearn.metrics import confusion_matrix
+    import matplotlib.pyplot as plt
+    
+    C = confusion_matrix(y_true, y_pred)
+    plt.matshow(C, cmap=plt.cm.Reds) # 根据最下面的图按自己需求更改颜色
+    # plt.colorbar()
 
-    # for i in range(len(C)):
-    #     for j in range(len(C)):
-    #         plt.annotate(C[j, i], xy=(i, j), horizontalalignment='center', verticalalignment='center')
+    for i in range(len(C)):
+        for j in range(len(C)):
+            plt.annotate(C[j, i], xy=(i, j), horizontalalignment='center', verticalalignment='center')
 
-    # plt.ylabel('True label')
-    # plt.xlabel('Predicted label')
-    # plt.show()
+    labels = ['Cr','Cg','In','Os','Ph','Rp','Ss','Wf','Ws','Wl']
+    # 修改横坐标的刻度
+    plt.xticks(np.linspace(0,9,10,endpoint=True),labels)
+    # 修改纵坐标的刻度
+    plt.yticks(np.linspace(0,9,10,endpoint=True),labels)
+
+    plt.ylabel('True label')
+    plt.xlabel('Predicted label')
+    plt.savefig("confuse.png")
