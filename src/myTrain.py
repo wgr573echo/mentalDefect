@@ -223,7 +223,7 @@ def main():
     test_dataloader = init_dataloader(options, 'test')
 
     model = init_protonet(options)
-    # print(model)
+    print(model.encoder)
     optim = init_optim(options, model) # adam
     lr_scheduler = init_lr_scheduler(options, optim)
     res = train(opt=options,
