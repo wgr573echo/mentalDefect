@@ -4,16 +4,16 @@ from torch.nn import functional as F
 from torch.nn.modules import Module
 
 
-class PrototypicalLoss(Module):
-    '''
-    Loss class deriving from Module for the prototypical loss function defined below
-    '''
-    def __init__(self, n_support):
-        super(PrototypicalLoss, self).__init__()
-        self.n_support = n_support
+# class PrototypicalLoss(Module):
+#     '''
+#     Loss class deriving from Module for the prototypical loss function defined below
+#     '''
+#     def __init__(self, n_support):
+#         super(PrototypicalLoss, self).__init__()
+#         self.n_support = n_support
 
-    def forward(self, input, target):
-        return prototypical_loss(input, target, self.n_support)
+#     def forward(self, input, target):
+#         return prototypical_loss(input, target, self.n_support)
 
 
 def euclidean_dist(x, y):
@@ -36,19 +36,7 @@ def euclidean_dist(x, y):
 
 def prototypical_loss(mode, input, target, n_support):
     '''
-    Inspired by https://github.com/jakesnell/prototypical-networks/blob/master/protonets/models/few_shot.py
-
-    Compute the barycentres by averaging the features of n_support
-    samples for each class in target, computes then the distances from each
-    samples' features to each one of the barycentres, computes the
-    log_probability for each n_query samples for each one of the current
-    classes, of appartaining to a class c, loss and accuracy are then computed
-    and returned
-    Args:
-    - input: the model output for a batch of samples
-    - target: ground truth for the above batch of samples
-    - n_support: number of samples to keep in account when computing
-      barycentres, for each one of the current classes
+    计算度量损失
     '''
     target_cpu = target.to('cpu')
     input_cpu = input.to('cpu') # backbone encode 得到的特征
@@ -65,11 +53,6 @@ def prototypical_loss(mode, input, target, n_support):
     support_idxs = list(map(supp_idxs, classes)) #当前50个feature对应的顺序下选出前五个作为support
 
     prototypes = torch.stack([input_cpu[idx_list].mean(0) for idx_list in support_idxs]) #prototypes：60*64（60个class的平均proto特征）
-    # 存最后model的prototype
-    # if mode == "test":
-    #     f = open('prototype.txt','w')
-    #     f.write(prototypes)
-    #     f.close()
 
     # FIXME when torch will support where as np
     query_idxs = torch.stack(list(map(lambda c: target_cpu.eq(c).nonzero()[n_support:], classes))).view(-1) #当前50个feature对应的顺序下选出后五个作为query
@@ -84,5 +67,11 @@ def prototypical_loss(mode, input, target, n_support):
     loss_val = -log_p_y.gather(2, target_inds).squeeze().view(-1).mean()
     _, y_hat = log_p_y.max(2)
     acc_val = y_hat.eq(target_inds.squeeze(2)).float().mean()
+
+    # ------------------------------
+    # 计算对比损失
+    # 对比的是：负样本对之间的距离（cosine矩阵）+ prototypes之间的距离（L2正则）
+    if mode == "train":
+        pass
 
     return loss_val,  acc_val

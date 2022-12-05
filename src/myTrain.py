@@ -1,7 +1,7 @@
 # coding=utf-8
 from prototypical_batch_sampler import PrototypicalBatchSampler
-from prototypical_loss import prototypical_loss as loss_fn
-from myDataset import myDataset
+from myLoss_contrastive import prototypical_loss as loss_fn
+from myDataset_noPre import myDataset
 from protonet import ProtoNet
 from myParser import get_parser
 
@@ -29,10 +29,10 @@ def init_seed(opt):
 def init_dataset(opt, mode):
     dataset = myDataset(mode=mode, root=opt.dataset_root)
     n_classes = len(np.unique(dataset.y))
-    if n_classes < opt.classes_per_it_tr or n_classes < opt.classes_per_it_val:
-        raise(Exception('There are not enough classes in the dataset in order ' +
-                        'to satisfy the chosen classes_per_it. Decrease the ' +
-                        'classes_per_it_{tr/val} option and try again.'))
+    # if n_classes < opt.classes_per_it_tr or n_classes < opt.classes_per_it_val:
+    #     raise(Exception('There are not enough classes in the dataset in order ' +
+    #                     'to satisfy the chosen classes_per_it. Decrease the ' +
+    #                     'classes_per_it_{tr/val} option and try again.'))
     return dataset
 
 
@@ -223,7 +223,7 @@ def main():
     test_dataloader = init_dataloader(options, 'test')
 
     model = init_protonet(options)
-    print(model.encoder)
+    # print(model.encoder)
     optim = init_optim(options, model) # adam
     lr_scheduler = init_lr_scheduler(options, optim)
     res = train(opt=options,
@@ -233,12 +233,16 @@ def main():
                 optim=optim,
                 lr_scheduler=lr_scheduler)
     best_state, best_acc, train_loss, train_acc, val_loss, val_acc = res
+    # pretrained_dict=torch.load("../myoutput/last_model.pth")
+    # model.load_state_dict(pretrained_dict)
     print('Testing with last model..')
     test(opt=options,
          test_dataloader=test_dataloader,
          model=model)
 
     model.load_state_dict(best_state)
+    # pretrained_dict=torch.load("../myoutput/best_model.pth")
+    # model.load_state_dict(pretrained_dict)
     print('Testing with best model..')
     test(opt=options,
          test_dataloader=test_dataloader,
@@ -246,7 +250,6 @@ def main():
 
     # optim = init_optim(options, model)
     # lr_scheduler = init_lr_scheduler(options, optim)
-
     # print('Training on train+val set..')
     # train(opt=options,
     #       tr_dataloader=trainval_dataloader,
@@ -254,11 +257,6 @@ def main():
     #       model=model,
     #       optim=optim,
     #       lr_scheduler=lr_scheduler)
-
-    # print('Testing final model..')
-    # test(opt=options,
-    #      test_dataloader=test_dataloader,
-    #      model=model)
 
 
 if __name__ == '__main__':
