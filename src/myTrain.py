@@ -117,7 +117,7 @@ def train(opt, tr_dataloader, model, optim, lr_scheduler, val_dataloader=None):
             x, y = x.to(device), y.to(device)
             model_output = model(x) #600张图片*64维特征
             loss, acc = loss_fn('train',model_output, target=y,
-                                n_support=opt.num_support_tr)
+                                n_support=opt.num_support_tr,temperature = opt.temp)
             loss.backward()
             optim.step()
             train_loss.append(loss.item())
@@ -139,7 +139,7 @@ def train(opt, tr_dataloader, model, optim, lr_scheduler, val_dataloader=None):
             x, y = x.to(device), y.to(device)
             model_output = model(x)
             loss, acc = loss_fn('val',model_output, target=y,
-                                n_support=opt.num_support_val)
+                                n_support=opt.num_support_val,temperature = opt.temp)
             val_loss.append(loss.item())
             val_acc.append(acc.item())
         avg_loss = np.mean(val_loss[-opt.iterations:])
@@ -177,7 +177,7 @@ def test(opt, test_dataloader, model):
             x, y = x.to(device), y.to(device)
             model_output = model(x)
             _, acc = loss_fn('test',model_output, target=y,
-                             n_support=opt.num_support_val)
+                             n_support=opt.num_support_val,temperature = opt.temp)
             avg_acc.append(acc.item())
     avg_acc = np.mean(avg_acc)
     print('Test Acc: {}'.format(avg_acc))
@@ -247,16 +247,6 @@ def main():
     test(opt=options,
          test_dataloader=test_dataloader,
          model=model)
-
-    # optim = init_optim(options, model)
-    # lr_scheduler = init_lr_scheduler(options, optim)
-    # print('Training on train+val set..')
-    # train(opt=options,
-    #       tr_dataloader=trainval_dataloader,
-    #       val_dataloader=None,
-    #       model=model,
-    #       optim=optim,
-    #       lr_scheduler=lr_scheduler)
 
 
 if __name__ == '__main__':

@@ -65,7 +65,7 @@ def get_parser():
     parser.add_argument('-nsVa', '--num_support_val',
                         type=int,
                         help='number of samples per class to use as support for validation, default=5',
-                        default=1)
+                        default=5)
 
     parser.add_argument('-nqVa', '--num_query_val',
                         type=int,
@@ -80,5 +80,10 @@ def get_parser():
     parser.add_argument('--cuda',
                         default='True',
                         help='enables cuda')
+
+    #-----------------------------------------
+    parser.add_argument('--temp',
+                        default='0.07',
+                        help='contrastive loss')
 
     return parser
