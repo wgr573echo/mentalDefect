@@ -83,7 +83,7 @@ def get_parser():
 
     #-----------------------------------------
     parser.add_argument('--temp',
-                        default='0.07',
+                        default='0.2',
                         help='contrastive loss')
 
     return parser

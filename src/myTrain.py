@@ -2,7 +2,8 @@
 from prototypical_batch_sampler import PrototypicalBatchSampler
 from myLoss_contrastive import prototypical_loss as loss_fn
 from myDataset_noPre import myDataset
-from protonet import ProtoNet
+from protonet_res18 import ProtoNet_res18 as ProtoNet
+# from protonet import ProtoNet
 from myParser import get_parser
 
 from tqdm import tqdm
